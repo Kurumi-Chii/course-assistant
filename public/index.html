@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>课程助手 · 本机版</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="wordmark" href="/" aria-label="课程助手首页"
+          ><span class="logo">课</span>课程助手 <small>本机版 / 01</small></a
+        ><span class="provider" id="agent-label">Agent · Codex</span>
+      </header>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">专注课程，其余交给流程。</p>
+          <h1>课程进行中，<br /><em>助手在这里。</em></h1>
+          <p class="intro">
+            连接已登录的 Edge 课程页，开始后自动处理随堂弹题。
+          </p>
+        </div>
+        <aside class="steps">
+          <span>01 <b>发现题目</b></span
+          ><span>02 <b>Agent 判断并选择</b></span
+          ><span>03 <b>关闭弹窗，点击播放器</b></span>
+        </aside>
+      </section>
+      <section class="console" aria-label="运行控制">
+        <div class="status-row">
+          <span class="status-dot" id="dot"></span>
+          <div>
+            <h2 id="phase">正在连接控制面板</h2>
+            <p id="message" role="status" aria-live="polite">
+              正在读取本机状态…
+            </p>
+          </div>
+          <span class="serial">SESSION / LOCAL</span>
+        </div>
+        <div id="alert" role="alert" hidden>
+          <strong>需要你处理</strong>
+          <p id="error"></p>
+        </div>
+        <div class="course">
+          <span>当前页面</span><strong id="course">尚未连接</strong>
+        </div>
+        <p id="playback-message" role="status">视频状态：等待检测</p>
+        <div class="actions">
+          <label
+            >判断 Agent
+            <select id="agent-select">
+              <option value="codex">Codex</option>
+            </select></label
+          >
+          <button id="connect">连接 Edge</button
+          ><button id="start" class="primary" disabled>开始处理</button
+          ><button id="pause" disabled>暂停</button
+          ><button id="stop" disabled>停止连接</button>
+          <button id="retry" class="primary" hidden>重试本题</button>
+        </div>
+        <div class="utilities">
+          <button id="check" class="link">检查 Agent 连接</button
+          ><span id="model-message">尚未检查</span
+          ><button id="notifications" class="link">启用桌面提醒</button
+          ><label
+            ><input
+              id="random-fallback"
+              type="checkbox"
+              disabled
+            />模型无法确定时随机选择</label
+          ><label><input id="sound" type="checkbox" />等待/异常声音提醒</label
+          ><button id="acknowledge" class="link" hidden>
+            我已手动处理，确认记录
+          </button>
+        </div>
+        <p class="connection-note" id="pending-note" hidden>
+          请在 Edge 的 Playwright 提示页中，选择你要处理的课程标签页并允许连接。
+        </p>
+      </section>
+      <section class="work">
+        <div class="section-heading">
+          <h2>当前题目</h2>
+          <span id="kind">等待发现</span>
+        </div>
+        <p id="question" class="question">开始后，新题目会显示在这里。</p>
+        <ol id="options"></ol>
+      </section>
+      <section class="history">
+        <div class="section-heading">
+          <h2>处理记录</h2>
+          <span id="count">0 条</span>
+        </div>
+        <p id="empty" class="empty">
+          还没有处理记录。每道题的结果都会保存在本机。
+        </p>
+        <div id="records"></div>
+      </section>
+      <footer>
+        <span>电脑和 Edge 需要保持运行。</span
+        ><span>遇到异常提示会暂停，等待你处理。</span>
+      </footer>
+    </main>
+  </body>
+</html>

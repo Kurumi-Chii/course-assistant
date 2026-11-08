@@ -1,0 +1,25 @@
+{
+  "name": "course-assistant",
+  "version": "1.2.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js",
+    "check:codex": "node scripts/check-codex.js",
+    "check:agent": "node scripts/check-agent.js",
+    "verify:browser": "node scripts/verify-browser.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.25.2",
+    "@playwright/mcp": "0.0.84"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0-alpha-2026-10-30",
+    "prettier": "3.6.2"
+  }
+}

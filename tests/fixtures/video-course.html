@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8" /><title>课程助手：离线视频模拟页</title>
+<style>
+  body {
+    padding: 24px;
+    font: 18px system-ui;
+  }
+  video {
+    width: 320px;
+    height: 180px;
+  }
+  button {
+    padding: 12px;
+    margin: 8px;
+  }
+</style>
+<h2 class="video-title">第一节</h2>
+<div role="region" aria-label="video player">
+  <video muted playsinline controls></video
+  ><button id="play" aria-label="播放">播放</button>
+</div>
+<button id="next" title="下一节">下一视频</button>
+<script>
+  window.nextClicks = 0;
+  window.playClicks = 0;
+  window.autoplayNext = false;
+  const video = document.querySelector("video");
+  let clip,
+    index = 0;
+  const event = (name) =>
+    new Promise((resolve) =>
+      video.addEventListener(name, resolve, { once: true }),
+    );
+  window.loadLesson = async (n) => {
+    index = n;
+    const loaded = event("loadeddata");
+    video.src = URL.createObjectURL(clip);
+    document.querySelector(".video-title").textContent = [
+      "第一节",
+      "第二节",
+      "第三节",
+    ][n];
+    document.querySelector("#next").disabled = n === 2;
+    await loaded;
+    if (window.autoplayNext) await video.play();
+  };
+  document.querySelector("#next").onclick = async () => {
+    window.nextClicks++;
+    await loadLesson(index + 1);
+  };
+  document.querySelector("#play").onclick = () => {
+    window.playClicks++;
+    if (video.paused) void video.play();
+    else video.pause();
+  };
+  window.finishVideo = async () => {
+    if (video.ended) return;
+    const done = event("ended");
+    await video.play();
+    await done;
+  };
+  window.boot = async () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const stream = canvas.captureStream(15),
+      recorder = new MediaRecorder(stream, { mimeType: "video/webm" }),
+      chunks = [];
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    const done = new Promise((resolve) => (recorder.onstop = resolve));
+    recorder.start();
+    const timer = setInterval(
+      () => canvas.getContext("2d").fillRect(0, 0, 64, 64),
+      30,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    recorder.stop();
+    await done;
+    clearInterval(timer);
+    stream.getTracks().forEach((t) => t.stop());
+    clip = new Blob(chunks, { type: "video/webm" });
+    await loadLesson(0);
+  };
+</script>

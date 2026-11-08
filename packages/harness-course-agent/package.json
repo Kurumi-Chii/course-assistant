@@ -1,0 +1,27 @@
+{
+  "name": "@local/harness-course-agent",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "课程助手本机模型连接，仅返回题目判断结果。",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "bridge.js",
+    "protocol.js",
+    "cordis.patch.yml"
+  ],
+  "engines": {
+    "dsh": "0.2.1-rc.5"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT"
+}
