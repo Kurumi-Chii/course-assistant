@@ -23,15 +23,6 @@ export function videoKey(p) {
 }
 // Serialized into the browser, so keep this function self-contained.
 export function playbackEvidence(p, mode = "exact") {
-  if (p && mode === "completed-next")
-    return JSON.stringify([
-      p.mediaKey,
-      p.duration,
-      p.error,
-      p.seeking,
-      p.next?.selector ?? null,
-      p.next?.disabled ?? null,
-    ]);
   return p
     ? JSON.stringify([
         p.mediaKey,
@@ -43,6 +34,7 @@ export function playbackEvidence(p, mode = "exact") {
         p.error,
         p.next?.selector ?? null,
         p.playSelector,
+        ...(mode === "reveal-controls" ? [p.surfaceSelector] : []),
       ])
     : "";
 }

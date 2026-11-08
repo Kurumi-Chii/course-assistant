@@ -165,6 +165,16 @@ test("Chinese dashboard controls, narrow layout, keyboard focus and untrusted te
   await page.reload();
   await page.getByRole("heading", { name: "有未完成题目" }).waitFor();
   assert.equal(await page.locator("#retry").isHidden(), true);
+  pending = {
+    kind: "video",
+    stage: "video-controls-intent",
+    key: "test-video",
+  };
+  await page.getByRole("heading", { name: "有未完成的视频切换" }).waitFor();
+  assert.match(
+    await page.locator("#message").textContent(),
+    /唤出播放器控制栏/,
+  );
   await page.getByRole("button", { name: "连接 Edge", exact: true }).focus();
   assert.equal(await page.evaluate(() => document.activeElement.id), "connect");
   await page.setViewportSize({ width: 390, height: 844 });

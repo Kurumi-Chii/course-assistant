@@ -59,6 +59,28 @@ export function extractPage() {
   info.playback = null;
   if (videos.length === 1) {
     const video = videos[0];
+    const videoPlayer =
+      player.length === 1 && player[0].contains(video) ? player[0] : null;
+    let surface = video;
+    if (videoPlayer) {
+      const bounds = video.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        bounds.x + bounds.width / 2,
+        bounds.y + bounds.height / 2,
+      );
+      if (
+        hit?.matches("div.videoArea") &&
+        hit.parentElement === video.parentElement
+      ) {
+        const cover = hit.getBoundingClientRect();
+        if (
+          ["x", "y", "width", "height"].every(
+            (key) => Math.abs(cover[key] - bounds[key]) <= 3,
+          )
+        )
+          surface = hit;
+      }
+    }
     const nextLabel =
       /^(?:下一(?:节|集|讲|课|视频|课时)|下一个视频|next(?: video| lesson)?)[\s»›>]*$/i;
     const nextNodes = [
@@ -79,6 +101,12 @@ export function extractPage() {
           .map((el) => el.closest('button,a,[role="button"]') || el),
       ),
     ];
+    for (const button of videoPlayer?.querySelectorAll(
+      ".controlsBar > div#nextBtn.nextButton",
+    ) ?? []) {
+      if (visible(button) && !nextNodes.includes(button))
+        nextNodes.push(button);
+    }
     const next = nextNodes.length === 1 ? nextNodes[0] : null;
     const playNodes =
       player.length === 1
@@ -112,7 +140,7 @@ export function extractPage() {
       currentTime: video.currentTime,
       duration: Number.isFinite(video.duration) ? video.duration : null,
       error: Boolean(video.error),
-      surfaceSelector: css(video),
+      surfaceSelector: css(surface),
       next: next
         ? {
             selector: css(next),

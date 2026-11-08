@@ -149,9 +149,9 @@ export class SiteAdapter {
     guard();
   }
   async revealNextVideo(before, guard) {
-    if (playbackState(before) !== "ended" || !before.surfaceSelector)
-      throw new Error("无法确认已结束的视频区域，未唤出控件");
-    const read = async (afterClick = false) => {
+    if (playbackState(before) !== "ended")
+      throw new Error("无法确认视频已结束");
+    const readEnded = async () => {
       guard();
       const s = await this.read();
       guard();
@@ -159,79 +159,46 @@ export class SiteAdapter {
       if (
         s.blocked ||
         s.quiz ||
-        !p ||
+        playbackState(p) !== "ended" ||
         videoKey(p) !== videoKey(before) ||
-        p.duration !== before.duration ||
-        p.error ||
-        p.seeking ||
-        (!afterClick && playbackState(p) !== "ended") ||
-        (afterClick && !p.ended && p.currentTime > 3)
+        p.duration !== before.duration
       )
         throw new Error("唤出控件时视频或页面已变化，已停止");
-      return s;
+      return p;
     };
-    let state = await read();
-    if (state.playback.next)
-      return { playback: state.playback, completion: null };
+    let p = await readEnded();
+    if (p.next) return p;
+    if (!p.surfaceSelector)
+      throw new Error("无法确认播放器区域，请手动切换下一节");
     guard();
     await this.bridge.hover(
-      state.playback.surfaceSelector,
+      p.surfaceSelector,
       "",
-      playbackEvidence(state.playback),
+      playbackEvidence(p, "reveal-controls"),
+      "reveal-controls",
     );
     guard();
-    let deadline = performance.now() + 600;
-    while (performance.now() < deadline) {
-      state = await read();
-      if (state.playback.next)
-        return { playback: state.playback, completion: null };
+    const deadline = performance.now() + 1200;
+    do {
+      p = await readEnded();
+      if (p.next) return p;
+      if (performance.now() >= deadline) break;
       await delay(100);
-    }
+    } while (true);
     guard();
-    await this.bridge.click(
-      state.playback.surfaceSelector,
-      "",
-      playbackEvidence(state.playback),
-    );
-    guard();
-    deadline = performance.now() + 3000;
-    while (performance.now() < deadline) {
-      state = await read(true);
-      if (state.playback.next)
-        return {
-          playback: state.playback,
-          completion: {
-            key: videoKey(before),
-            duration: before.duration,
-            revealClicked: true,
-          },
-        };
-      await delay(100);
-    }
-    throw new Error("唤出控制栏后仍未找到唯一下一节按钮；未重复点击视频");
+    throw new Error("悬停后未找到唯一的下一节按钮，请手动切换视频");
   }
-  async nextVideo(before, guard, completion = null) {
+  async nextVideo(before, guard) {
     guard();
     const state = await this.read();
     guard();
     const p = state.playback;
-    const confirmedCompleted =
-      completion?.revealClicked === true &&
-      completion.key === videoKey(before) &&
-      completion.duration === before.duration;
     if (
       state.blocked ||
       state.quiz ||
       !p ||
       videoKey(p) !== videoKey(before) ||
-      (playbackState(p) !== "ended" &&
-        !(
-          confirmedCompleted &&
-          p.duration === completion.duration &&
-          !p.error &&
-          !p.seeking &&
-          p.currentTime <= 3
-        )) ||
+      playbackState(p) !== "ended" ||
       !p.next ||
       p.next.disabled ||
       p.next.selector !== before.next?.selector
@@ -249,13 +216,7 @@ export class SiteAdapter {
       )
         throw new Error("下一节链接离开当前课程，请手动切换");
     }
-    const mode = confirmedCompleted ? "completed-next" : "exact";
-    await this.bridge.click(
-      p.next.selector,
-      "",
-      playbackEvidence(p, mode),
-      mode,
-    );
+    await this.bridge.click(p.next.selector, "", playbackEvidence(p));
     guard();
     const deadline = performance.now() + 10000;
     while (performance.now() < deadline) {

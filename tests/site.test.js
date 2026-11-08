@@ -135,7 +135,7 @@ test("a changed selection during submit focus wait is never submitted", async (t
   assert.equal((await site.read()).quiz.result, null);
 });
 
-test("revealing controls tries hover before one click and retains ended completion if it restarts", async () => {
+test("when the controls stay hidden, revealing them never clicks a replay surface", async () => {
   const p = {
     mediaKey: "same",
     label: "一",
@@ -168,10 +168,12 @@ test("revealing controls tries hover before one click and retains ended completi
       };
     },
   });
-  const ready = await site.revealNextVideo(p, () => {});
-  assert.deepEqual(actions, ["hover", "click"]);
-  assert.equal(ready.playback.next.selector, "#next");
-  assert.equal(ready.completion.revealClicked, true);
+  await assert.rejects(
+    site.revealNextVideo(p, () => {}),
+    /下一节/,
+  );
+  assert.deepEqual(actions, ["hover"]);
+  assert.equal(current.ended, true);
 });
 
 test("hover alone revealing next never clicks the video surface", async () => {
@@ -198,11 +200,10 @@ test("hover alone revealing next never clicks the video surface", async () => {
     },
   });
   const ready = await site.revealNextVideo(p, () => {});
-  assert.equal(ready.playback.next.selector, "#next");
-  assert.equal(ready.completion, null);
+  assert.equal(ready.next.selector, "#next");
 });
 
-test("a changed video while revealing controls prevents the fallback click", async () => {
+test("a changed video aborts the control reveal", async () => {
   const p = {
     mediaKey: "one",
     paused: true,
@@ -231,7 +232,7 @@ test("a changed video while revealing controls prevents the fallback click", asy
   assert.equal(clicks, 0);
 });
 
-test("pause during the final hover wait prevents the fallback surface click", async () => {
+test("pausing during the hover wait aborts the control reveal", async () => {
   const p = {
     mediaKey: "one",
     paused: true,

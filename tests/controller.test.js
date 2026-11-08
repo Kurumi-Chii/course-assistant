@@ -718,7 +718,7 @@ test("hidden next controls are revealed before the next intent and click", async
     assert.equal(journal.pending.stage, "video-controls-intent");
     actions.push("reveal");
     p = { ...endedVideo(), surfaceSelector: "video" };
-    return { playback: p, completion: null };
+    return p;
   };
   site.nextVideo = async () => {
     assert.equal(journal.pending.stage, "video-next-intent");

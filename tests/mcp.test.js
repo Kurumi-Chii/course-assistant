@@ -126,33 +126,92 @@ test("official MCP executes the real fixed-code select, close and playback path"
   const hiddenFirst = (await site.read()).playback;
   assert.equal(hiddenFirst.next, null);
   const revealedFirst = await site.revealNextVideo(hiddenFirst, () => {});
-  assert.equal(revealedFirst.completion, null);
+  assert.ok(revealedFirst.next);
   assert.equal(
     (await bridge.rawRead(() => ({ surfaceClicks }))).surfaceClicks,
     0,
   );
-  const second = await site.nextVideo(revealedFirst.playback, () => {});
+  const second = await site.nextVideo(revealedFirst, () => {});
   await site.playNextVideo(second.playback, () => {});
   assert.equal((await bridge.rawRead(() => ({ playClicks }))).playClicks, 1);
   await bridge.call("browser_run_code_unsafe", {
     code: "async page => { await page.evaluate(async () => {autoplayNext=true;await finishVideo();}); }",
   });
   await bridge.call("browser_evaluate", {
-    function:
-      "() => {const v=document.querySelector('video'),n=document.querySelector('#next');n.hidden=true;v.onmousemove=null;v.onclick=()=>{surfaceClicks++;n.hidden=false;void v.play();};}",
+    function: `() => {
+      const v=document.querySelector('video'),n=document.querySelector('#next');
+      n.hidden=true;
+      v.onmousemove=null;
+      v.onclick=null;
+      const player=v.parentElement;
+      player.style.position='relative';
+      const cover=document.createElement('div');
+      cover.className='videoArea';
+      Object.assign(cover.style, {
+        position:'absolute', left:v.offsetLeft+'px', top:v.offsetTop+'px',
+        width:v.offsetWidth+'px', height:v.offsetHeight+'px',
+      });
+      cover.onclick=()=>{surfaceClicks++;void v.play();};
+      player.append(cover);
+      const controls=document.createElement('div');
+      controls.className='controlsBar';
+      controls.hidden=true;
+      const next=document.createElement('div');
+      next.id='nextBtn';
+      next.className='nextButton';
+      next.style.cssText='width:80px;height:30px;cursor:pointer';
+      next.onclick=async()=>{await n.onclick();next.setAttribute('aria-disabled',String(n.disabled));};
+      controls.append(next);
+      player.append(controls);
+    }`,
   });
   const hiddenSecond = (await site.read()).playback;
-  const revealedSecond = await site.revealNextVideo(hiddenSecond, () => {});
-  assert.equal(revealedSecond.completion.revealClicked, true);
+  await bridge.call("browser_evaluate", {
+    function:
+      "() => {document.querySelector('.videoArea').className='unrecognized-cover';}",
+  });
+  await assert.rejects(
+    bridge.click(
+      hiddenSecond.surfaceSelector,
+      "",
+      playbackEvidence(hiddenSecond, "reveal-controls"),
+      "reveal-controls",
+    ),
+    (error) => /video changed or already playing/.test(error.cause),
+  );
   assert.equal(
     (await bridge.rawRead(() => ({ surfaceClicks }))).surfaceClicks,
-    1,
+    0,
   );
-  const third = await site.nextVideo(
-    revealedSecond.playback,
-    () => {},
-    revealedSecond.completion,
+  await bridge.call("browser_evaluate", {
+    function:
+      "() => {document.querySelector('.unrecognized-cover').className='videoArea';}",
+  });
+  await assert.rejects(
+    site.revealNextVideo(hiddenSecond, () => {}),
+    /下一节/,
   );
+  assert.equal(
+    (await bridge.rawRead(() => ({ surfaceClicks }))).surfaceClicks,
+    0,
+  );
+  assert.equal(playbackState((await site.read()).playback), "ended");
+  await bridge.call("browser_evaluate", {
+    function: `() => {
+      const cover=document.querySelector('.videoArea');
+      cover.onmousemove=(event)=>{
+        if(event.offsetY>cover.clientHeight*.8)
+          document.querySelector('.controlsBar').hidden=false;
+      };
+    }`,
+  });
+  // Move off the cover between attempts so the next hover sends mousemove.
+  await bridge.call("browser_run_code_unsafe", {
+    code: "async page => { await page.mouse.move(0, 0); }",
+  });
+  const revealedSecond = await site.revealNextVideo(hiddenSecond, () => {});
+  assert.ok(revealedSecond.next);
+  const third = await site.nextVideo(revealedSecond, () => {});
   await site.playNextVideo(third.playback, () => {});
   assert.equal(
     (await bridge.rawRead(() => ({ playClicks, nextClicks }))).playClicks,

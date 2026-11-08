@@ -114,17 +114,29 @@ function render(s) {
   focusAttention = Boolean(s.attention && s.attentionKind !== "playback");
   const unfinished =
     s.pending && s.phase !== "running" && s.phase !== "connecting";
+  const unfinishedVideo = unfinished && s.pending.kind === "video";
   $("phase").textContent = s.attention
     ? s.attentionKind === "playback"
       ? "视频需要你处理"
       : "等待你切回课程页"
     : unfinished
-      ? "有未完成题目"
+      ? unfinishedVideo
+        ? "有未完成的视频切换"
+        : "有未完成题目"
       : (labels[s.phase] ?? "状态待确认");
   $("message").textContent = unfinished
-    ? s.pending.stage === "solving"
-      ? "尚未选择答案。连接原课程页后，可重试本题；已手动处理请确认记录。"
-      : "上次已进入点击步骤，请手动检查课程页后确认记录。"
+    ? unfinishedVideo
+      ? ({
+          "video-controls-intent":
+            "上次在唤出播放器控制栏时中断，请检查课程页后确认记录。",
+          "video-next-intent":
+            "上次在切换下一节时中断，请检查课程页后确认记录。",
+          "video-play-intent":
+            "上次在启动新视频时中断，请检查课程页后确认记录。",
+        }[s.pending.stage] ?? "请检查课程页后确认视频切换记录。")
+      : s.pending.stage === "solving"
+        ? "尚未选择答案。连接原课程页后，可重试本题；已手动处理请确认记录。"
+        : "上次已进入点击步骤，请手动检查课程页后确认记录。"
     : (s.message ?? "");
   $("error").textContent = error;
   $("alert").hidden = !error;

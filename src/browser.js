@@ -152,12 +152,17 @@ export class BrowserBridge {
     this.assertState(state);
     return state;
   }
-  async hover(selector, expectedQuiz, expectedPlayback = null) {
+  async hover(
+    selector,
+    expectedQuiz,
+    expectedPlayback = null,
+    mediaMode = "exact",
+  ) {
     return this.click(
       selector,
       expectedQuiz,
       expectedPlayback,
-      "exact",
+      mediaMode,
       "hover",
     );
   }
@@ -170,19 +175,24 @@ export class BrowserBridge {
   ) {
     if (
       !["click", "hover"].includes(action) ||
-      !["exact", "completed-next"].includes(mediaMode)
+      !["exact", "reveal-controls"].includes(mediaMode)
     )
       throw new Error("不支持的播放器操作");
     if (typeof selector !== "string" || selector.length > 5000)
       throw new Error("页面按钮无法定位");
     const bound = this.bound;
     if (!bound) throw new Error("浏览器未连接");
+    const pointerOptions =
+      action === "hover" && mediaMode === "reveal-controls"
+        ? "await handle.evaluate(el=>el.matches('div.videoArea')?{position:{x:el.clientWidth/2,y:el.clientHeight*0.9}}:{})"
+        : "{}";
     const code = `async (page) => {
       if(!await page.evaluate(()=>document.visibilityState==='visible'&&document.hasFocus()))throw new Error('course page background');
       const handle=await page.$(${JSON.stringify(selector)}); if(!handle)throw new Error('target missing');
       const panel=await handle.evaluateHandle(el=>el.closest('[role="dialog"],.el-dialog')||el);
       try {
-        await handle.${action}({trial:true,timeout:3000});
+        const pointerOptions=${pointerOptions};
+        await handle.${action}({...pointerOptions,trial:true,timeout:3000});
         const state=await page.evaluate(${extractPage.toString()});
         if(state.url!==${JSON.stringify(bound.url)}||state.documentKey!==${JSON.stringify(bound.documentKey)})throw new Error('target changed');
         if(state.blocked||state.problem)throw new Error('page blocked');
@@ -192,7 +202,7 @@ export class BrowserBridge {
         if(${JSON.stringify(expectedPlayback)}!==null&&mediaEvidence(state.playback,${JSON.stringify(mediaMode)})!==${JSON.stringify(expectedPlayback)})throw new Error('video changed or already playing');
         if(!await panel.evaluate(el=>el.isConnected)||!await handle.evaluate(el=>el.isConnected))throw new Error('original node detached');
         if(!await page.evaluate(()=>document.visibilityState==='visible'&&document.hasFocus()))throw new Error('course page background');
-        await handle.${action}({timeout:1000});return {performed:${JSON.stringify(action)}};
+        await handle.${action}({...pointerOptions,timeout:1000});return {performed:${JSON.stringify(action)}};
       } finally {await panel.dispose();await handle.dispose();}
     }`;
     await this.call("browser_run_code_unsafe", { code }, 10000);

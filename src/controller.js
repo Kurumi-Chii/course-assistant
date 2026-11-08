@@ -260,12 +260,12 @@ export class Controller {
     });
     guard();
     this.seen.add(key);
-    let ready = { playback: p, completion: null };
+    let ready = p;
     if (!p.next) {
       this.message = "正在唤出播放器控制栏";
       ready = await this.site.revealNextVideo(p, guard);
       guard();
-      if (!ready.playback.next || ready.playback.next.disabled)
+      if (!ready.next || ready.next.disabled)
         throw new Error(
           "控制栏已显示，但下一视频按钮不可用，请手动确认是否已到最后一节",
         );
@@ -273,11 +273,7 @@ export class Controller {
       guard();
     }
     this.message = "正在切换下一视频";
-    const next = await this.site.nextVideo(
-      ready.playback,
-      guard,
-      ready.completion,
-    );
+    const next = await this.site.nextVideo(ready, guard);
     guard();
     const fresh = await this.waitForForeground(guard);
     guard();
