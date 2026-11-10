@@ -13,7 +13,7 @@
 
 ## 快速开始
 
-1. 安装 **Node.js 22 或更高版本**、**Microsoft Edge** 和 **Playwright Extension**。用 GitHub Desktop 克隆仓库，或下载 Releases 中单独提供的 Windows 源码包并解压。 [Node.js 下载](https://nodejs.org/en/download) · [Playwright 扩展安装说明](https://github.com/microsoft/playwright/blob/main/packages/extension/README.md)
+1. 安装 **Node.js 22 或更高版本** 和 **Microsoft Edge**，再按下文安装 Playwright 扩展。用 GitHub Desktop 克隆仓库，或下载 Releases 中单独提供的 Windows 源码包并解压。 [Node.js 下载](https://nodejs.org/en/download) · [在 Edge 安装 Playwright 扩展](#在-edge-安装-playwright-扩展)
 2. 双击 **启动课程助手.cmd**。首次启动会安装依赖，随后在默认浏览器打开控制面板。默认地址为 `http://127.0.0.1:18767`。
 3. 配置一个 Agent，在控制面板选择它，再点 **检查 Agent 连接**。检查会发出一次实际的模型请求。
 4. 在 Edge 登录并打开课程视频页。点 **连接 Edge**，在 Playwright 扩展提示中选择该标签页并允许连接。
@@ -24,6 +24,16 @@
 | --- | --- |
 | Codex | 安装 Codex CLI，运行 `codex login` 登录。 [Codex CLI 文档](https://developers.openai.com/codex/cli/) |
 | DeepSeek Harness | 登录 Harness 并配置默认模型，再安装课程助手连接插件。 [Harness 安装与配对](docs/harness-agent.md) |
+
+## 在 Edge 安装 Playwright 扩展
+
+1. **打开官方扩展页面**。用 Microsoft Edge 打开 Chrome 应用商店中的 Playwright Extension，核对发布者为 **Playwright Team**。 [Playwright Extension](https://chromewebstore.google.com/detail/playwright-extension/mmlmfjhmonkocbjadbfplnigmagldckm)
+2. **添加到 Edge**。点击商店页上的「获取扩展」或「添加至 Chrome」。如果 Edge 提示「允许来自其他商店的扩展」，选择「允许」，然后继续安装。 [Microsoft Edge 安装扩展说明](https://support.microsoft.com/en-us/edge/add-turn-off-or-remove-extensions-in-microsoft-edge)
+3. **确认扩展已启用**。检查安装弹窗中的权限后，点「添加扩展」。在 Edge 地址栏输入 `edge://extensions/`，确认列表里有 **Playwright Extension**，且右侧开关已打开。
+4. **授权课程标签页**。在同一个 Edge 用户配置中登录智慧树并打开课程视频页。启动课程助手，在控制面板点「连接 Edge」。在 Playwright 打开的连接提示页中，选中实际播放课程的标签页并允许连接。 [Playwright 标签页授权说明](https://github.com/microsoft/playwright/blob/main/packages/extension/README.md#browser-tab-selection)
+5. **确认连接成功**。回到控制面板，看到「已连接，准备就绪」和当前页面标题后，点击「开始处理」，再切回课程标签页。
+
+如果面板停在「等待 Edge 连接确认」，检查 Edge 是否打开了 Playwright 的授权标签页。如果没有看到提示，到 `edge://extensions/` 核对扩展已启用，并确认课程页和扩展在同一个 Edge 用户配置中。
 
 ## 兼容性与常见问题
 
