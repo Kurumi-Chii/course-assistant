@@ -65,7 +65,7 @@ export function apply(ctx) {
       file,
       solve: (q, signal) => solveWithHarness(ctx, q, signal),
       metadata: () => ({
-        pluginVersion: "1.0.1",
+        pluginVersion: "1.0.2",
         route: ctx.agentDefaultModel.currentSelection(),
       }),
     });

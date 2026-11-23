@@ -1,15 +1,15 @@
 # DeepSeek Harness 连接
 
-课程助手的连接插件复用 Harness 已登录账号和当前默认模型。已验证的组合为 **DeepSeek Harness 0.2.1-rc.5** 与 **课程助手连接插件 1.0.1**。其他 Harness 版本的插件兼容性需自行核对。
+课程助手的连接插件复用 Harness 已登录账号和当前默认模型。**连接插件 1.0.2** 支持 **DSH 0.2.1-rc.5** 和 **0.2.2-rc.3**。已在隔离的 0.2.2-rc.3 Host 验证安装、加载和本机健康检查。升级后可在面板用「检查 Agent 连接」确认实际模型可用。
 
 ## 安装与连接
 
 1. 安装 DeepSeek Harness 桌面版，打开一次、登录并选择可用的默认模型。 [Harness 官方发布页](https://github.com/deepseek-ai/deepseek-harness/releases)
-2. 下载发布附件 `local-harness-course-agent-1.0.1.tgz`。如果只有源码，可在项目目录运行 `npm pack ./packages/harness-course-agent --ignore-scripts` 生成安装包。
+2. 下载发布附件 `local-harness-course-agent-1.0.2.tgz`。如果只有源码，可在项目目录运行 `npm pack ./packages/harness-course-agent --ignore-scripts` 生成安装包。
 3. 完全退出 Harness，包括托盘进程。若已在 Harness 应用菜单安装桌面版的 `dsh` 命令，在新终端用以下命令安装，将路径换成实际文件位置。 [Harness 桌面插件管理](https://github.com/deepseek-ai/deepseek-harness/blob/master/apps/desktop/README.md)
 
    ```powershell
-   dsh plugin --profile desktop add "D:\Downloads\local-harness-course-agent-1.0.1.tgz"
+   dsh plugin --profile desktop add "D:\Downloads\local-harness-course-agent-1.0.2.tgz"
    ```
 
 4. 重新打开 Harness，确认连接插件已启用。保持 Harness 运行，在课程助手面板选择 **DeepSeek Harness**，点击 **检查 Agent 连接**。
